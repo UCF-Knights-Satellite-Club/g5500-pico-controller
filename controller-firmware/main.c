@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/adc.h"
@@ -25,12 +26,14 @@ int main() {
 
     int deadzone = 100;
 
-
-
     char cmd_buf[CMD_BUFFER_SIZE];
     char incoming_byte;
     int cmd_len = 0;
 
+    float target_azimuth;
+    float target_elevation;
+    int stop_azimuth = 0;
+    int stop_elevation = 0;
 
     while (1) {
         // Read serial commands
@@ -39,16 +42,33 @@ int main() {
                 // EasyComm II commands are minimum 2 chars, less than that is incomplete command
                 if (cmd_len < 2)
                     break;
+
+                cmd_buf[cmd_len] = '\0';
                 
                 // Commands are AZ, EL, ML, MR, MU, MD, SA, SE, VE
-                
+                if (cmd_buf[0] == 'A' && cmd_buf[1] == 'Z') {
+                    stop_azimuth = 0;
+                    target_azimuth = atof(cmd_buf[2]);
+                }
+                else if (cmd_buf[0] == 'E' && cmd_buf[1] == 'L') {
+                    stop_elevation = 0;
+                    target_elevation = atof(cmd_buf[2]);
+                }
+                else if (cmd_buf[0] == 'S') {
+                    if (cmd_buf[1] == 'A') {
+                        stop_azimuth = 1;
+                    }
+                    else if (cmd_buf[1] == 'E') {
+                        stop_elevation = 1;
+                    }
+                }
 
-                
-                
+                cmd_len = 0;
             }
 
             cmd_buf[cmd_len] = incoming_byte;
             cmd_len++;
+
             // Command is too large
             if (cmd_len >= CMD_BUFFER_SIZE) {
                 break;
