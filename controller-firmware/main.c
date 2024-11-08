@@ -127,7 +127,7 @@ void parse_command(const char* buf, const int buf_len) {
             myData.target_azimuth = atof(buf + 2);
         }
         else {
-            printf("%.1f\n", myData.current_azimuth);
+            printf("AZ%.1f ", myData.current_azimuth);
             fflush(stdout);
         }
     }
@@ -137,7 +137,7 @@ void parse_command(const char* buf, const int buf_len) {
             myData.target_elevation = atof(buf + 2);
         }
         else {
-            printf("%.1f\n", myData.current_elevation);
+            printf("EL%.1f\n", myData.current_elevation);
             fflush(stdout);
         }
     }
@@ -164,9 +164,11 @@ void update_current_position() {
 
 float get_value(int pin) {
     adc_select_input(pin);
-    // uint16_t result = adc_read();
+    uint16_t result = adc_read();
+    // Max value is 4095 lowest value is 22
+    const float conversion_factor = 1;
+    return result * conversion_factor;
     // return result;
-    return adc_read();
 }
 
 void clear_buffer(char* buf) {
